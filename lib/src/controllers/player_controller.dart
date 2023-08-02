@@ -174,6 +174,13 @@ class PlayerController extends ChangeNotifier {
     return result;
   }
 
+  setWaveformData(List<double> data) {
+    _waveformData
+      ..clear()
+      ..addAll(data);
+    notifyListeners();
+  }
+
   /// A function to start the player to play/resume the audio.
   ///
   /// When playing audio is finished, this [player] will be [stopped]
