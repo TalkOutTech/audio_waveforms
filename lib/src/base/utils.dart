@@ -20,7 +20,7 @@ enum RecorderState { initialized, recording, paused, stopped }
 /// Android and IOS are have been separated to better support
 /// platform wise encoder and output formats.
 ///
-/// Check https://developer.android.com/reference/android/media/MediaRecorder.AudioEncoder
+/// Check [MediaRecorder.AudioEncoder](https://developer.android.com/reference/android/media/MediaRecorder.AudioEncoder)
 /// for more info.
 enum AndroidEncoder {
   /// Default
@@ -44,7 +44,7 @@ enum AndroidEncoder {
 /// Android and IOS are have been separated to better support
 /// platform wise encoder and output formats.
 ///
-/// Check https://developer.android.com/reference/android/media/MediaRecorder.OutputFormat
+/// Check [MediaRecorder.OutputFormat](https://developer.android.com/reference/android/media/MediaRecorder.OutputFormat)
 /// for more info.
 enum AndroidOutputFormat {
   /// Default
@@ -72,7 +72,7 @@ enum AndroidOutputFormat {
 /// Android and IOS are have been separated to better support
 /// platform wise encoder and output formats.
 ///
-/// Check https://developer.apple.com/documentation/coreaudiotypes/1572096-audio_format_identifiers
+/// Check [Audio Format Identifiers](https://developer.apple.com/documentation/coreaudiotypes/1572096-audio_format_identifiers)
 /// for more info.
 enum IosEncoder {
   /// Default
@@ -139,9 +139,6 @@ enum FinishMode {
   stop
 }
 
-// TODO: remove this function if we remove support for flutter 2.x
-T? ambiguate<T>(T? object) => object;
-
 /// An enum to decide which type of waveform to show.
 enum WaveformType {
   /// Fits Waveform in provided width. Audio can be seeked with
@@ -190,11 +187,14 @@ extension RecorderStateExtension on RecorderState {
 /// Rate of updating the reported current duration.
 enum UpdateFrequency {
   /// Reports duration at every 50 milliseconds.
-  high,
+  high(50),
 
   /// Reports duration at every 100 milliseconds.
-  medium,
+  medium(100),
 
   /// Reports duration at every 200 milliseconds.
-  low
+  low(200);
+
+  const UpdateFrequency(this.value);
+  final int value;
 }

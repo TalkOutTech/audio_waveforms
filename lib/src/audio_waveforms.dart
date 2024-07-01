@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '/audio_waveforms.dart';
@@ -40,18 +42,23 @@ class _AudioWaveformsState extends State<AudioWaveforms> {
 
   double _initialOffsetPosition = 0.0;
   double _initialPosition = 0.0;
+  Duration currentlyRecordedDuration = Duration.zero;
+  late StreamSubscription<Duration> streamSubscription;
 
   @override
   void initState() {
     super.initState();
-    widget.recorderController.addListener(() {
-      if (mounted) setState(() {});
+    widget.recorderController.addListener(_recorderControllerListener);
+    streamSubscription =
+        widget.recorderController.onCurrentDuration.listen((duration) {
+      currentlyRecordedDuration = duration;
     });
   }
 
   @override
   void dispose() {
-    widget.recorderController.removeListener(() {});
+    widget.recorderController.removeListener(_recorderControllerListener);
+    streamSubscription.cancel();
     super.dispose();
   }
 
@@ -68,12 +75,10 @@ class _AudioWaveformsState extends State<AudioWaveforms> {
         onHorizontalDragStart:
             widget.enableGesture ? _handleHorizontalDragStart : null,
         child: ClipPath(
-          clipper: WaveClipper(!widget.waveStyle.showDurationLabel
-              ? 0.0
-              : widget.waveStyle.extraClipperHeight ??
-                  (widget.waveStyle.durationLinesHeight +
-                      (widget.waveStyle.durationStyle.fontSize ??
-                          widget.waveStyle.durationLinesHeight))),
+          clipper: WaveClipper(
+            extraClipperHeight: _extraClipperHeight,
+            waveWidth: _waveWidth,
+          ),
           child: RepaintBoundary(
             child: CustomPaint(
               size: widget.size,
@@ -107,19 +112,44 @@ class _AudioWaveformsState extends State<AudioWaveforms> {
                 labelSpacing: widget.waveStyle.labelSpacing,
                 gradient: widget.waveStyle.gradient,
                 shouldClearLabels: widget.recorderController.shouldClearLabels,
-                revertClearlabelCall:
+                revertClearLabelCall:
                     widget.recorderController.revertClearLabelCall,
                 setCurrentPositionDuration:
                     widget.recorderController.setScrolledPositionDuration,
                 shouldCalculateScrolledPosition:
                     widget.shouldCalculateScrolledPosition,
                 scaleFactor: widget.waveStyle.scaleFactor,
+                currentlyRecordedDuration: currentlyRecordedDuration,
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// Gets width of a single wave including space between two waves.
+  double get _waveWidth =>
+      widget.waveStyle.waveThickness + widget.waveStyle.spacing;
+
+  /// Provides extra clipping if needed.
+  double get _extraClipperHeight {
+    if (widget.waveStyle.showDurationLabel) {
+      // If duration labels are enabled and for some reason labels are getting
+      // cut or effecting other widget cut. This will help to reduce or add
+      // clipping.
+      if (widget.waveStyle.extraClipperHeight != null) {
+        return widget.waveStyle.extraClipperHeight!;
+      }
+      // Default clipping. Calculated from duration line.
+      return widget.waveStyle.durationLinesHeight +
+          (widget.waveStyle.durationStyle.fontSize ??
+              widget.waveStyle.durationLinesHeight);
+    } else {
+      // If labels are disabled then there is no need to add/remove extra
+      // clipping.
+      return 0;
+    }
   }
 
   ///This handles scrolling of the wave
@@ -174,8 +204,11 @@ class _AudioWaveformsState extends State<AudioWaveforms> {
       _totalBackDistance = Offset.zero;
       _dragOffset = Offset.zero;
     }
-    ambiguate(WidgetsBinding.instance)?.addPostFrameCallback((_) {
+  }
+
+  void _recorderControllerListener() {
+    if (mounted) {
       setState(() {});
-    });
+    }
   }
 }

@@ -20,11 +20,14 @@ class Constants {
   static const String preparePlayer = "preparePlayer";
   static const String startPlayer = "startPlayer";
   static const String stopPlayer = "stopPlayer";
+  static const String releasePlayer = "releasePlayer";
   static const String pausePlayer = "pausePlayer";
   static const String seekTo = "seekTo";
   static const String progress = "progress";
   static const String setVolume = "setVolume";
   static const String volume = "volume";
+  static const String setRate = "setRate";
+  static const String rate = "rate";
   static const String rightVolume = "rightVolume";
   static const String getDuration = "getDuration";
   static const String durationType = "durationType";
@@ -44,4 +47,5 @@ class Constants {
       "onCurrentExtractedWaveformData";
   static const String useLegacyNormalization = "useLegacyNormalization";
   static const String updateFrequency = "updateFrequency";
+  static const String overrideAudioSession = "overrideAudioSession";
 }

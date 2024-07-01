@@ -31,10 +31,8 @@ class PlayerController extends ChangeNotifier {
   /// Provides [max] duration of currently provided audio file.
   int get maxDuration => _maxDuration;
 
-  final UniqueKey _playerKey = UniqueKey();
-
   /// An unique key string associated with [this] player only
-  String get playerKey => _playerKey.toString();
+  final playerKey = shortHash(UniqueKey());
 
   final bool _shouldClearLabels = false;
 
@@ -122,7 +120,7 @@ class PlayerController extends ChangeNotifier {
     final isPrepared = await AudioWaveformsInterface.instance.preparePlayer(
       path: path,
       key: playerKey,
-      frequency: _getFrequency(),
+      frequency: updateFrequency.value,
       volume: volume,
     );
     if (isPrepared) {
@@ -216,7 +214,7 @@ class PlayerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// A function to stop player. After calling this, resources are freed.
+  /// A function to stop player. After calling this.
   Future<void> stopPlayer() async {
     final isStopped =
         await AudioWaveformsInterface.instance.stopPlayer(playerKey);
@@ -224,6 +222,11 @@ class PlayerController extends ChangeNotifier {
       _setPlayerState(PlayerState.stopped);
     }
     notifyListeners();
+  }
+
+  /// Releases the resources associated with this player.
+  Future<void> release() async {
+    await AudioWaveformsInterface.instance.release(playerKey);
   }
 
   /// Sets volume for this player. Doesn't throw Exception.
@@ -236,6 +239,16 @@ class PlayerController extends ChangeNotifier {
   Future<bool> setVolume(double volume) async {
     final result =
         await AudioWaveformsInterface.instance.setVolume(volume, playerKey);
+    return result;
+  }
+
+  /// Sets playback rate for this player. Doesn't throw Exception.
+  /// Returns false if it couldn't set the rate.
+  ///
+  /// Default to 1.0
+  Future<bool> setRate(double rate) async {
+    final result =
+        await AudioWaveformsInterface.instance.setRate(rate, playerKey);
     return result;
   }
 
@@ -271,7 +284,8 @@ class PlayerController extends ChangeNotifier {
   @override
   void dispose() async {
     if (playerState != PlayerState.stopped) await stopPlayer();
-    PlatformStreams.instance.playerControllerFactory.remove(this);
+    await release();
+    PlatformStreams.instance.playerControllerFactory.remove(playerKey);
     if (PlatformStreams.instance.playerControllerFactory.length == 1) {
       PlatformStreams.instance.dispose();
     }
@@ -286,7 +300,7 @@ class PlayerController extends ChangeNotifier {
   void stopAllPlayers() async {
     PlatformStreams.instance.dispose();
     await AudioWaveformsInterface.instance.stopAllPlayers();
-    PlatformStreams.instance.playerControllerFactory.remove(this);
+    PlatformStreams.instance.playerControllerFactory.clear();
   }
 
   /// Sets [_shouldRefresh] flag with provided boolean parameter.
@@ -298,18 +312,6 @@ class PlayerController extends ChangeNotifier {
   void setRefresh(bool refresh) {
     _shouldRefresh = refresh;
     notifyListeners();
-  }
-
-  // TODO: Replace this with enhanced enum when we drop support for dart 2.17 earlier versions
-  int _getFrequency() {
-    switch (updateFrequency) {
-      case UpdateFrequency.high:
-        return 2;
-      case UpdateFrequency.medium:
-        return 1;
-      case UpdateFrequency.low:
-        return 0;
-    }
   }
 
   @override

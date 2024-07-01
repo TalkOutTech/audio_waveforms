@@ -36,9 +36,12 @@ struct Constants {
     static let startPlayer = "startPlayer"
     static let stopPlayer = "stopPlayer"
     static let pausePlayer = "pausePlayer"
+    static let releasePlayer = "releasePlayer"
     static let seekTo = "seekTo"
     static let progress = "progress"
     static let setVolume = "setVolume"
+    static let setRate = "setRate"
+    static let rate = "rate"
     static let volume = "volume"
     static let getDuration = "getDuration"
     static let durationType = "durationType"
@@ -57,6 +60,7 @@ struct Constants {
     static let onExtractionProgressUpdate = "onExtractionProgressUpdate"
     static let useLegacyNormalization = "useLegacyNormalization"
     static let updateFrequency = "updateFrequency"
+    static let overrideAudioSession = "overrideAudioSession"
 }
 
 enum FinishMode : Int{
@@ -65,11 +69,6 @@ enum FinishMode : Int{
     case stop = 2
 }
 
-enum UpdateFrequency : Double{
-    case high = 50.0
-    case medium = 100.0
-    case low = 200.0
-}
 /// Creates an 2D array of floats
 public typealias FloatChannelData = [[Float]]
 
